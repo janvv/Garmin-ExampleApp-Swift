@@ -43,10 +43,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, IQUIOverrideDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         ConnectIQ.sharedInstance().initialize(withUrlScheme: ReturnURLScheme, uiOverrideDelegate: nil)
-        DeviceManager.sharedInstance.restoreDevicesFromFileSystem()
-        let viewController = DeviceListViewController.deviceListViewController()
+        
+        //there was some timing problems here because the delegate (of the DeviceManager) and the TableView (of the DeviceListViewController) were not available during runtime.
+        let deviceManager = DeviceManager.sharedInstance
+        let deviceListViewController = DeviceListViewController.deviceListViewController()
         let controller = UINavigationController()
-        controller.pushViewController(viewController, animated: false)
+        controller.pushViewController(deviceListViewController, animated: false)
+        
+        deviceManager.delegate = deviceListViewController
+        deviceManager.restoreDevicesFromFileSystem()
+        
         let window = UIWindow(frame: UIScreen.main.bounds)
         window.rootViewController = controller
         window.makeKeyAndVisible()

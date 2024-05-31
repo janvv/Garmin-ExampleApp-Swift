@@ -53,10 +53,11 @@ class DeviceManager: NSObject {
     }
     
     func handleOpenURL(_ url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-        guard let sourceApplication = options[UIApplication.OpenURLOptionsKey.sourceApplication] as? String else {
-            print("handleOpenURL: Source application value was nil, expecting \(IQGCMBundle); disregarind open request, likely not for us.")
-            return false
-        }
+//        guard let sourceApplication = options[UIApplication.OpenURLOptionsKey.sourceApplication] as? String else {
+//            print("handleOpenURL: Source application value was nil, expecting \(IQGCMBundle); disregarind open request, likely not for us.")
+//            return false
+//        }
+        var sourceApplication = IQGCMBundle
         if (url.scheme! == ReturnURLScheme) && (sourceApplication == IQGCMBundle) {
             
             let devices = ConnectIQ.sharedInstance().parseDeviceSelectionResponse(from: url)
@@ -80,34 +81,68 @@ class DeviceManager: NSObject {
     
     func saveDevicesToFileSystem() {
         print("Saving known devices.")
-        if !NSKeyedArchiver.archiveRootObject(devices, toFile: self.devicesFilePath()) {
-            print("Failed to save devices file.")
+        
+        let fileManager = FileManager.default
+        let filePath = self.devicesFilePath()
+        
+        
+        //if !NSKeyedArchiver.archiveRootObject(devices, toFile: self.devicesFilePath()) {
+        //    print("Failed to save devices file.")
+        //}
+        //the above code fails, use NSKeyedArchiver.archivedData(withRootObject: <#T##Any#>, requiringSecureCoding: <#T##Bool#>) instead
+        do {
+            let data = try NSKeyedArchiver.archivedData(withRootObject: devices, requiringSecureCoding: false)
+            try data.write(to: URL(fileURLWithPath: self.devicesFilePath()))
         }
+        catch let error {
+            print("Failed to save devices file with error: \(error)")
+        }
+        
     }
     
     func restoreDevicesFromFileSystem() {
-        guard let restoredDevices = NSKeyedUnarchiver.unarchiveObject(withFile: self.devicesFilePath()) as? [IQDevice] else {
-            print("No device restoration file found.")
-            return
-        }
-        
-        if restoredDevices.count > 0 {
-            print("Restored saved devices:")
-            for device in restoredDevices {
-                print("\(device)")
+        do {
+            if let data = try? Data(contentsOf: URL(fileURLWithPath: self.devicesFilePath())) {
+                if let restoredDevices = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSArray.self, IQDevice.self], from: data) as? [IQDevice] {
+                    // Use restoredDevices array of IQDevice objects
+                    if restoredDevices.count > 0 {
+                        print("Restored saved devices:")
+                        for device in restoredDevices {
+                            print("\(device)")
+                        }
+                        self.devices = restoredDevices
+                    }
+                    else {
+                        print("No saved devices to restore.")
+                        self.devices.removeAll()
+                    }
+                    self.delegate!.devicesChanged()
+                } else {
+                    print("Failed to unarchive the file as an array of IQDevice objects.")
+                }
+            } else {
+                print("Failed to read data from the file.")
             }
-            self.devices = restoredDevices
+        } catch {
+            print("Error: \(error)")
         }
-        else {
-            print("No saved devices to restore.")
-            self.devices.removeAll()
-        }
-        self.delegate!.devicesChanged()
     }
     
     func devicesFilePath() -> String {
         var paths = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true)
         let appSupportDirectory = URL(fileURLWithPath: paths[0])
+        // list all files in the appSupportDirectory
+        let fileManager = FileManager.default
+        do {
+            let files = try fileManager.contentsOfDirectory(atPath: appSupportDirectory.path)
+            for file in files {
+                print("File: \(file)")
+            }
+        }
+        catch let error {
+            print("There was an error listing the contents of the directory \(appSupportDirectory) with error: \(error)")
+        }
+        
         let dirExists = (try? appSupportDirectory.checkResourceIsReachable()) ?? false
         if !dirExists {
             print("DeviceManager.devicesFilePath appSupportDirectory \(appSupportDirectory) does not exist, creating... ")
@@ -118,6 +153,6 @@ class DeviceManager: NSObject {
                 print("There was an error creating the directory \(appSupportDirectory) with error: \(error)")
             }
         }
-        return appSupportDirectory.appendingPathComponent(kDevicesFileName).absoluteString
+        return appSupportDirectory.appendingPathComponent(kDevicesFileName).path
     }
 }

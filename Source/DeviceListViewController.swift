@@ -125,7 +125,10 @@ class DeviceListViewController: UIViewController, DeviceManagerDelegate, IQDevic
         for device: IQDevice in self.deviceManager.devices {
             ConnectIQ.sharedInstance().register(forDeviceEvents: device, delegate: self)
         }
-        self.tableView.reloadData()
+        //reload data if if table view is available
+        if self.tableView != nil {
+            self.tableView.reloadData()
+        }
     }
 
     func deviceStatusChanged(_ device: IQDevice, status: IQDeviceStatus) {
