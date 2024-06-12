@@ -1,23 +1,26 @@
 # Garmin-ExampleApp-Swift
-A Swift 3 version of Garmin's Connect IQ iOS Example App, demonstrating use of the Connect IQ iOS SDK.
 
-This project is a fully-functional Swift 3 port of [Garmin's iOS Example App](https://developer.garmin.com/connect-iq/sdk/), which is offered only in Objective-C.
+This repository contains functional code for an iOS companion app that can send data to a Garmin Datafield.
 
-More details on the Connect IQ iOS SDK can be found at [Garmin's documentation for the Connect IQ iOS SDK](https://developer.garmin.com/connect-iq/developer-tools/ios-sdk-guide/).
+## Overview
 
-## Use:
-1. Download and open the project in XCode
-2. Update the Provisioning Profile to one of your own (Project Settings -> General -> Signing)
-3. Update the Bundle Identifier to one of your own (Project Settings -> Bundle Identifier)
-4. Build for and run on your iOS device (the iOS simulator lacks BLE support)
+The iOS code is based on the original [Garmin's iOS Example Code](https://developer.garmin.com/connect-iq/sdk/) that was ported to Swift by **Doug Williams**. You can find his repository [here](https://github.com/dougw/Garmin-ExampleApp-Swift).
 
-You may want to [side load](https://developer.garmin.com/connect-iq/getting-started/) one of Garmin's example projects on your test device -- e.g. the Comm example app -- so that you may exercise the BLE channel in Connect IQ.
+The Garmin Data Field code was inspired by [Garmin's connectiq-companion-app-example-ios](https://github.com/garmin/connectiq-companion-app-example-ios).
 
-**Note that there is an issue with Garmin's Edge family of devices that renders the Connect IQ iOS SDK BLE channel broken at the time of writing (1/1/2017).**
-The Connect IQ team is aware of this bug, but have not committed to a timeline for the fix. See the following posts in the Connect IQ forum for details:
-* [https://forums.garmin.com/showthread.php?366206-Edge-1000-CIQ-2-2-1-Communications-transmit](https://forums.garmin.com/showthread.php?366206-Edge-1000-CIQ-2-2-1-Communications-transmit)
-* [https://forums.garmin.com/showthread.php?363615-iOS-SDK-returning-a-device-UUID-00000000-0000-0000-0000-000000000000](https://forums.garmin.com/showthread.php?363615-iOS-SDK-returning-a-device-UUID-00000000-0000-0000-0000-000000000000)
+## Modifications
 
-The was tested successfully on an iPhone running iOS 10, connecting to a Garmin Forerunner 735XT.
+The iOS code was modified to compile with the latest iOS SDKs with the following changes:
+- Replaced deprecated method to restore device data.
+- Ensured delegate and table views are available.
+- Added Bluetooth entitlements.
 
-*I, nor this project, are in anyway affiliated with Garmin.*
+## Application Selection List
+
+In the application selection list, two apps can be selected if they are installed:
+1. **String Test App**: This is the original example application (not a data field) that came with Garmin's iOS example code. It just shows the received data and might serve debugging purposes. Therefore, it was left.
+2. **My Data Field**: This is the new data field that does more or less the same as the "String Test App" application: It just shows the received message as a string.
+
+## Compilation and Logs
+
+The repository includes the iOS code to be compiled with Xcode. In order for it to compiled you need to update the bundle identifieer and provisioning profile. The Garmin code can be compiled using Visual Studio Code or you just move the `Garmin.prg` file to the `Garmin/Apps` directory of your Garmin device. Logs will end up in the `Garmin/Apps/LOGS/SUGAR.TXT` file, but this file needs to be created first. For more information see https://developer.garmin.com/connect-iq/connect-iq-basics/your-first-app/
