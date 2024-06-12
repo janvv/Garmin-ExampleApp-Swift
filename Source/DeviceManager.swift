@@ -53,6 +53,7 @@ class DeviceManager: NSObject {
     }
     
     func handleOpenURL(_ url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        //this failed, so I commented it out
 //        guard let sourceApplication = options[UIApplication.OpenURLOptionsKey.sourceApplication] as? String else {
 //            print("handleOpenURL: Source application value was nil, expecting \(IQGCMBundle); disregarind open request, likely not for us.")
 //            return false
